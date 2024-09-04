@@ -45,6 +45,7 @@ class DebitCardController extends BaseController
             'type' => $request->input('type'),
             'number' => rand(1000000000000000, 9999999999999999),
             'expiration_date' => Carbon::now()->addYear(),
+            'is_active' => true, 
         ]);
 
         return response()->json(new DebitCardResource($debitCard), HttpResponse::HTTP_CREATED);
@@ -76,9 +77,10 @@ class DebitCardController extends BaseController
         $debitCard->update([
             'disabled_at' => $request->input('is_active') ? null : Carbon::now(),
         ]);
-
+    
         return response()->json(new DebitCardResource($debitCard), HttpResponse::HTTP_OK);
-    }
+    }    
+    
 
     /**
      * Destroy a debit card
