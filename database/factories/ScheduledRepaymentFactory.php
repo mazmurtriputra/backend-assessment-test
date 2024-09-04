@@ -22,7 +22,12 @@ class ScheduledRepaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            // TODO: Complete factory
+            'loan_id' => DebitCard::factory(),
+            'amount' => $this->faker->randomFloat(2, 1, 10000),
+            'currency_code' => $this->faker->currencyCode,
+            'due_date' => $this->faker->dateTimeBetween('+3 month', '+6 month'),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

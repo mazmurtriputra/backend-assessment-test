@@ -23,9 +23,11 @@ class DebitCardTransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'amount' => $this->faker->randomNumber(),
-            'currency_code' => $this->faker->randomElement(DebitCardTransaction::CURRENCIES),
-            'debit_card_id' => fn () => DebitCard::factory()->create(),
+            'debit_card_id' => DebitCard::factory(),
+            'amount' => $this->faker->randomFloat(2, 1, 10000),
+            'currency_code' => $this->faker->currencyCode,
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

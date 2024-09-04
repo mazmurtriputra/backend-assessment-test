@@ -64,6 +64,43 @@ class LoanService
      */
     public function repayLoan(Loan $loan, int $amount, string $currencyCode, string $receivedAt): ReceivedRepayment
     {
-        
+        $remainingAmount = $amount;
+
+        $scheduledRepayments = $loan->scheduledRepayments()
+            ->where('status', ScheduledRepayment::STATUS_DUE)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
+        foreach ($scheduledRepayments as $repayment) {
+            if ($remainingAmount >= $repayment->outstanding_amount) {
+                $remainingAmount -= $repayment->outstanding_amount;
+                $repayment->update([
+                    'outstanding_amount' => 0,
+                    'status' => ScheduledRepayment::STATUS_REPAID,
+                ]);
+            } else {
+                $repayment->update([
+                    'outstanding_amount' => $repayment->outstanding_amount - $remainingAmount,
+                ]);
+                $remainingAmount = 0;
+                break;
+            }
+        }
+
+        $loan->update([
+            'outstanding_amount' => $loan->outstanding_amount - $amount + $remainingAmount,
+            'status' => $loan->outstanding_amount - $amount + $remainingAmount === 0
+                ? Loan::STATUS_REPAID
+                : Loan::STATUS_DUE,
+        ]);
+
+        ReceivedRepayment::create([
+            'loan_id' => $loan->id,
+            'amount' => $amount - $remainingAmount,
+            'currency_code' => $currencyCode,
+            'received_at' => $receivedAt,
+        ]);
+
+        return $loan;
     }
 }
